@@ -7,7 +7,7 @@ const Form = () => {
   const [gastos, setGastos] = useState([]);
   const [selectedGasto, setSelectedGasto] = useState('');
   const [selectedPibe, setSelectedPibe] = useState([]);
-  const [montoGasto, setMontoGasto] = useState(0);
+  const [montoGasto, setMontoGasto] = useState('');
   const [resultados, setResultados] = useState(null);
 
   const handleGastoChange = (e) => {
@@ -23,7 +23,15 @@ const Form = () => {
     setSelectedPibe(selectedOptions);
   };
 
-  const handleAgregarGasto = () => {
+  const clearSelect = (selectElement) => {
+    if (selectElement) {
+      selectElement.selectedIndex = -1; // Establece el índice de selección en -1 para borrar la selección
+    }
+  };
+
+  const handleAgregarGasto = (e) => {
+    e.preventDefault();
+
     if (selectedGasto && montoGasto > 0 && !isNaN(montoGasto) && selectedPibe.length > 0) {
       const nuevoGasto = {
         tipoGasto: selectedGasto,
@@ -32,20 +40,21 @@ const Form = () => {
       };
       setGastos([...gastos, nuevoGasto]);
       setSelectedGasto('');
-      setMontoGasto(0);
+      setMontoGasto('');
       setSelectedPibe([]);
+
+      const selectElement = document.getElementById('selector');
+      clearSelect(selectElement);
     }
   };
 
   const handleSubmit = () => {
     const totalPorPersona = {};
 
-    // Inicializar el total por persona
     Pibes.forEach((pibe) => {
       totalPorPersona[pibe] = 0;
     });
 
-    // Calcular los totales por persona para cada gasto
     gastos.forEach((gasto) => {
       const totalParticipantes = gasto.participantes.length;
       if (totalParticipantes === 0) return; // No hay participantes
@@ -56,7 +65,6 @@ const Form = () => {
       });
     });
 
-    // Mostrar los resultados
     const resultadosTexto = Pibes.map((pibe) => `${pibe}: $${totalPorPersona[pibe].toFixed(2)}`).join(', ');
 
     setResultados(resultadosTexto);
@@ -88,6 +96,7 @@ const Form = () => {
           onChange={handleMontoGastoChange}
         />
         <select
+          id='selector'
           className="overflow-hidden p-2  bg-[#555555] p-x outline-1 text-white rounded-md border-2 border-black/30 shadow-md shadow-black/70"
           multiple
           onChange={handlePibeChange}
@@ -100,12 +109,11 @@ const Form = () => {
         </select>
         <button
           type="button"
-          className={`bg-[#555555] text-white shadow-md shadow-black/70 p-2 m-2 outline-1 border-black/30 rounded-md border-2 ${
-            !(selectedGasto && montoGasto > 0 && !isNaN(montoGasto) && selectedPibe.length > 0)
-              ? 'cursor-not-allowed opacity-50' 
-              : '' 
-          }`}
-          onClick={handleAgregarGasto}
+          className={`bg-[#555555] text-white shadow-md shadow-black/70 p-2 m-2 outline-1 border-black/30 rounded-md border-2 ${!(selectedGasto && montoGasto > 0 && !isNaN(montoGasto) && selectedPibe.length > 0)
+            ? 'cursor-not-allowed opacity-50'
+            : ''
+            }`}
+          onClick={e => handleAgregarGasto(e)}
           disabled={!(selectedGasto && montoGasto > 0 && !isNaN(montoGasto) && selectedPibe.length > 0)}
         >
           Agregar Gasto
